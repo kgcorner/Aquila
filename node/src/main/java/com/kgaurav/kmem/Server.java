@@ -31,7 +31,7 @@ public class Server implements Runnable {
             jsonObject.addProperty("address", serverSocket.getInetAddress().getHostAddress());
             jsonObject.addProperty("port", serverSocket.getLocalPort());
             jsonObject.addProperty("type", Application.getType());
-            response.setStatus(CommandCode.SERVER_STATUS);
+            response.setStatus(Response.SERVER_STATUS);
             response.setData(jsonObject.toString());
             try {
                 Util.sendToBalancer(new Gson().toJson(response));

@@ -1,4 +1,4 @@
-package com.kgaurav.kmem.model;
+package com.kgaurav.balancer.model;
 
 /**
  * Created by admin on 3/23/2018.
@@ -7,6 +7,7 @@ public class Response {
     private String message;
     private String data;
     private int status;
+
     public static final int SERVER_STATUS = 3;
 
     public String getMessage() {

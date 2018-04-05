@@ -7,5 +7,4 @@ public class CommandCode {
     public static final int GET = 0;
     public static final int PUT = 1;
     public static final int DELETE = 2;
-    public static final int SERVER_STATUS = 3;
 }
