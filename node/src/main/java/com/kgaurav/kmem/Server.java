@@ -6,8 +6,10 @@ import com.kgaurav.kmem.data.Store;
 import com.kgaurav.kmem.exception.ConnectionFailedException;
 import com.kgaurav.kmem.model.*;
 import org.apache.log4j.Logger;
+import sun.java2d.loops.ProcessPath;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -23,7 +25,9 @@ public class Server implements Runnable {
     public boolean startServer() {
         try {
             serverSocket = new ServerSocket(0);
-            LOGGER.info(Application.getType()+ " Node started at : "+
+            String nodeName = ManagementFactory.getRuntimeMXBean().getName();
+            String nodeType = Application.getType() == 0?"Backup":"Main";
+            LOGGER.info(nodeName+" "+nodeType+ " Node started at : "+
                     serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort());
             running = true;
             Response response = new Response();
@@ -34,7 +38,9 @@ public class Server implements Runnable {
             response.setStatus(Response.SERVER_STATUS);
             response.setData(jsonObject.toString());
             try {
+                LOGGER.info("Sending message to balancer");
                 Util.sendToBalancer(new Gson().toJson(response));
+                LOGGER.info("Message sent to balancer");
             } catch (ConnectionFailedException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -46,6 +52,7 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.info("Listening....");
         DataInputStream inputStream = null;
         while(running)  {
             try {

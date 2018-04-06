@@ -59,11 +59,15 @@ public class Util {
         Socket me = null;
         DataOutputStream outputStream = null;
         try {
+            LOGGER.info("Connecting to balancer");
             me = new Socket(Application.getLbAddress(), Application.getLbPort());
+            LOGGER.info("Connected to balancer");
             outputStream = new DataOutputStream(me.getOutputStream());
             outputStream.write(data.getBytes());
             return true;
         } catch (IOException e) {
+            LOGGER.error("Connection failed with balancer");
+            LOGGER.error(e.getMessage(), e);
             throw new ConnectionFailedException(e.getMessage());
         }
         finally {

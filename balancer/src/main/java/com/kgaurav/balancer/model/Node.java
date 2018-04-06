@@ -4,6 +4,8 @@ package com.kgaurav.balancer.model;
  * Created by admin on 4/5/2018.
  */
 
+import java.util.List;
+
 /**
  * Represents a node
  */
@@ -12,6 +14,8 @@ public class Node {
     private int port;
     private Node_Type type;
     private boolean active;
+    private List<Node> backupNodes;
+
     public enum Node_Type {
         MAIN,BACKUP
     }
@@ -46,5 +50,13 @@ public class Node {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public List<Node> getBackupNodes() {
+        return backupNodes;
+    }
+
+    public void setBackupNodes(List<Node> backupNodes) {
+        this.backupNodes = backupNodes;
     }
 }

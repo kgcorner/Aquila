@@ -2,7 +2,12 @@ group 'com.kgcorner.aquila'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
-
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.kgaurav.balancer.Application'
+    }
+    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
+}
 
 
 repositories {
@@ -13,4 +18,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile group: 'log4j', name: 'log4j', version: '1.2.16'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-io
+    compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
+
 }
