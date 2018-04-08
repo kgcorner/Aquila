@@ -8,6 +8,7 @@ public class Response {
     private String data;
     private int status;
     public static final int SERVER_STATUS = 3;
+    public static final int DEAD_NODE = 4;
 
     public String getMessage() {
         return message;
