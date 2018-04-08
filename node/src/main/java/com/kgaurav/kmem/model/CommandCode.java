@@ -10,6 +10,7 @@ public class CommandCode {
     public static final int BACK_GET = 3;
     public static final int BACK_PUT = 4;
     public static final int BACK_DELETE = 5;
-    public static final int BREATH = 5;
+    public static final int BREATH = 7;
+    public static final int ADD_BACKUP_NODE = 6;
 
 }
