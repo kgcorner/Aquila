@@ -14,7 +14,16 @@ public class Application {
             System.exit(1);
         }
         int nodeCount = Integer.parseInt(args[0]);
-        BalancerServer server = new BalancerServer();
+        if(nodeCount == 0) {
+            LOGGER.error("At least 1 node is required to start balancer");
+            System.exit(1);
+        }
+        String banner = "\n" +
+                "****************************************************************\n"+
+                "* A         Q           U           I           L            A *\n"+
+                "****************************************************************\n";
+        LOGGER.info(banner);
+        BalancerServer server = BalancerServer.getInstance();
         server.startServer();
         Thread serverThread = new Thread(server);
         serverThread.start();
@@ -24,5 +33,6 @@ public class Application {
             e.printStackTrace();
         }
         server.startNodes(nodeCount);
+        LOGGER.info("Balancer started successfully");
     }
 }
