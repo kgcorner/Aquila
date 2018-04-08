@@ -10,14 +10,15 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Created by admin on 4/5/2018.
+ */
+
+/**
+ * Balancer Server Communicate with Store Nodes and backup nodes
  */
 public class BalancerServer implements Runnable {
 
@@ -31,6 +32,14 @@ public class BalancerServer implements Runnable {
     private static Object waitForServerStatus = new Object();
     private static final Properties properties = Util.loadProperties();
     private static final String PATH_TO_NODE_APP = "path.to.node";
+    private static final BalancerServer INSTANCE = new BalancerServer();
+
+    private BalancerServer() {}
+
+    public static BalancerServer getInstance() {
+        return INSTANCE;
+    }
+
 
     /**
      * Start balancers with given number of mainNodes
@@ -101,6 +110,8 @@ public class BalancerServer implements Runnable {
             try {
                 synchronized (waitForServerStatus) {
                     waitForServerStatus.wait();
+                    linkedBackupNodes.add(backup1);
+                    linkedBackupNodes.add(backup2);
                 }
             } catch (InterruptedException e) {}
         }
@@ -117,7 +128,7 @@ public class BalancerServer implements Runnable {
                 LOGGER.info("Received connection "+connectionSocket.getInetAddress().getHostAddress()+":"+
                         connectionSocket.getLocalPort());
                 inputStream = new DataInputStream(connectionSocket.getInputStream());
-                String request = convertStreamToString(inputStream);
+                String request = Util.convertStreamToString(inputStream);
                 Response response = new Gson().fromJson(request, Response.class);
                 if(response.getStatus() == Response.SERVER_STATUS) {
                     JsonParser jsonParser = new JsonParser();
@@ -145,45 +156,38 @@ public class BalancerServer implements Runnable {
                     }
                 }
                 else {
-                    //TODO: return data/response to caller
+                    //TODO: Add implementation for restoring backup nodes
                 }
-
-                /*switch (command.getCommandCode()) {
-                    case CommandCode.GET:
-                        returnItem(command);
-                        break;
-                    case CommandCode.PUT:
-                        saveItem(command);
-                        break;
-                    case CommandCode.DELETE:
-                        deleteItem(command);
-                        break;
-                }*/
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
+            }
+            finally {
+                Util.closeInputStream(inputStream);
             }
         }
     }
 
-    private static String convertStreamToString(InputStream is) throws IOException{
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
+    /**
+     * Returns available main nodes
+     * @return
+     */
+    public List<Node> getMainNodes() {
+        return Collections.unmodifiableList(mainNodes);
+    }
 
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-        } catch (IOException e) {
-            throw e;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw e;
-            }
-        }
+    /**
+     * Returns available backup nodes, not linked to any main node
+     * @return
+     */
+    public List<Node> getAvailableBackupNodes() {
+        return Collections.unmodifiableList(new ArrayList<Node>(availableBackupNodes));
+    }
 
-        return sb.toString();
+    /**
+     * Returns list of backup nodes linked to main nodes
+     * @return
+     */
+    public List<Node> getLinkedBackupNodes() {
+        return Collections.unmodifiableList(linkedBackupNodes);
     }
 }
