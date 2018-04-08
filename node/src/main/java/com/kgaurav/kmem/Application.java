@@ -13,6 +13,7 @@ public class Application {
     private static String LB_ADDRESS = null;
     private static int LB_PORT = 0;
     private static int type = -1;
+    public static boolean STOP = false;
     public static void main(String[] args) {
         if(args.length != 7) {
             if(args.length != 3) {
@@ -35,6 +36,7 @@ public class Application {
         }else {
             type = NodeType.ACTIVE_NODE;
             startAsMain(args);
+
         }
     }
 
@@ -94,6 +96,7 @@ public class Application {
             LOGGER.info("Backup Node set to "+node1.getAddress()+":"+node1.getPort()+" and "
                     + node1.getAddress()+":"+node1.getPort());
         }
+        Stethoscope.start();
     }
 
     public static String getLbAddress() {
