@@ -8,6 +8,7 @@ import com.kgaurav.kmem.model.Node;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,8 +39,28 @@ public class SyncSystem implements Runnable {
         }
     }
 
+    /**
+     * Add backup nodes
+     * @param node
+     */
     public static void addBackupNode(Node node) {
         backupNodes.add(node);
+    }
+
+    /**
+     * Removes Dead node from backup node list
+     * @param node
+     */
+    public static void removeDeadNode(Node node) {
+        backupNodes.remove(node);
+    }
+
+    /**
+     * Get backup nodes
+     * @return
+     */
+    public static List<Node> getBackupNodes() {
+        return Collections.unmodifiableList(backupNodes);
     }
 }
 
