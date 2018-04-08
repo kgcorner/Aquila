@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 /**
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
  */
 public class Util {
     private static final Logger LOGGER = Logger.getLogger(Util.class);
-
+    private static Properties properties = null;
     /**
      * Closes the {@link Socket}
      * @param socket
@@ -60,11 +61,15 @@ public class Util {
      * @throws ConnectionFailedException
      */
     public static boolean sendToBalancer(String data) throws ConnectionFailedException {
-        Socket me = null;
+        return sendToBalancer(null, data);
+    }
+    public static boolean sendToBalancer(Socket connection, String data) throws ConnectionFailedException {
+        Socket me = connection;
         DataOutputStream outputStream = null;
         try {
             LOGGER.info("Connecting to balancer");
-            me = new Socket(Application.getLbAddress(), Application.getLbPort());
+            if(me == null)
+                me = new Socket(Application.getLbAddress(), Application.getLbPort());
             LOGGER.info("Connected to balancer");
             outputStream = new DataOutputStream(me.getOutputStream());
             outputStream.write(data.getBytes());
@@ -106,6 +111,28 @@ public class Util {
             closeOutputStream(outputStream);
             closeSocket(me);
         }
+    }
+
+    /**
+     * Loads node's Configuration
+     * @return
+     */
+    public static Properties loadConfigs() {
+        if(properties == null) {
+            InputStream inputStream = Util.class.getResourceAsStream("/application.properties");
+            try {
+                properties = new Properties();
+                properties.load(inputStream);
+            } catch (IOException e) {
+                LOGGER.error("Failed to load configs");
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        return properties;
+    }
+
+    public static boolean isNullOrEmpty(String string) {
+        return string == null || string.trim().length() < 1;
     }
 
 }
