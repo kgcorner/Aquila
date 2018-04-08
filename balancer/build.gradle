@@ -9,16 +9,37 @@ jar {
     from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }}
 }
 
+configurations {
+    cucumberRuntime {
+        extendsFrom testRuntime
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
+task cucumber() {
+    dependsOn assemble, compileTestJava
+    doLast {
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+            args = ['--plugin', 'pretty', '--glue', 'com.kgaurav.balancer', 'src/test/resources']
+        }
+    }
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'info.cukes:cucumber-java:1.2.4'
+    testCompile 'info.cukes:cucumber-junit:1.2.4'
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile group: 'log4j', name: 'log4j', version: '1.2.16'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-io
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
-
+}
+test {
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
 }
