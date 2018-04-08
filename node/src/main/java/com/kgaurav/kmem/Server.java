@@ -3,6 +3,7 @@ package com.kgaurav.kmem;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.kgaurav.kmem.data.Store;
+import com.kgaurav.kmem.data.SyncSystem;
 import com.kgaurav.kmem.exception.ConnectionFailedException;
 import com.kgaurav.kmem.model.*;
 import org.apache.log4j.Logger;
@@ -61,22 +62,25 @@ public class Server implements Runnable {
                 Command command = new Gson().fromJson(request, Command.class);
                 switch (command.getCommandCode()) {
                     case CommandCode.GET:
-                        returnItem(command, false);
+                        returnItem(connectionSocket, command, false);
                         break;
                     case CommandCode.PUT:
-                        saveItem(command, false);
+                        saveItem(connectionSocket, command, false);
                         break;
                     case CommandCode.DELETE:
-                        deleteItem(command, false);
+                        deleteItem(connectionSocket, command, false);
                         break;
                     case CommandCode.BACK_GET:
-                        returnItem(command, true);
+                        returnItem(connectionSocket, command, true);
                         break;
                     case CommandCode.BACK_PUT:
-                        saveItem(command, true);
+                        saveItem(connectionSocket, command, true);
                         break;
                     case CommandCode.BACK_DELETE:
-                        deleteItem(command, true);
+                        deleteItem(connectionSocket, command, true);
+                        break;
+                    case CommandCode.ADD_BACKUP_NODE:
+                        addBackupNode(connectionSocket, command);
                         break;
                 }
             } catch (IOException e) {
@@ -85,7 +89,21 @@ public class Server implements Runnable {
         }
     }
 
-    private void returnItem(Command command, boolean backup) {
+    private void addBackupNode(Socket connectionSocket, Command command) {
+        String nodeStr = command.getOtherData();
+        Node node = new Gson().fromJson(nodeStr, Node.class);
+        SyncSystem.addBackupNode(node);
+        Response response = new Response();
+        response.setMessage("Node added");
+        String data = new Gson().toJson(response);
+        try {
+            Util.sendToBalancer(connectionSocket, data);
+        } catch (ConnectionFailedException e) {
+            LOGGER.error("Failed to connect with balancer");
+        }
+    }
+
+    private void returnItem(Socket connection, Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Item item = Store.getItem(internalItem.getId());
         if(!backup) {
@@ -96,14 +114,14 @@ public class Server implements Runnable {
             String data = new Gson().toJson(response);
 
             try {
-                Util.sendToBalancer(data);
+                Util.sendToBalancer(connection, data);
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Failed to connect with balancer");
             }
         }
     }
 
-    private void saveItem(Command command, boolean backup) {
+    private void saveItem(Socket connectionSocket, Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Item item = new Item(internalItem.getKey(), internalItem.getValue());
         Store.putItem(internalItem.getId(), item);
@@ -112,14 +130,14 @@ public class Server implements Runnable {
             response.setMessage("Item is saved");
             String data = new Gson().toJson(response);
             try {
-                Util.sendToBalancer(data);
+                Util.sendToBalancer(connectionSocket, data);
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Failed to connect with balancer");
             }
         }
     }
 
-    private void deleteItem(Command command, boolean backup) {
+    private void deleteItem(Socket connectionSocket, Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Store.removeItem(internalItem.getId());
         if(!backup) {
@@ -127,7 +145,7 @@ public class Server implements Runnable {
             response.setMessage("Item is deleted");
             String data = new Gson().toJson(response);
             try {
-                Util.sendToBalancer(data);
+                Util.sendToBalancer(connectionSocket, data);
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Failed to connect with balancer");
             }
