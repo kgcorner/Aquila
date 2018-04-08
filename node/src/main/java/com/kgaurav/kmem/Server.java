@@ -6,7 +6,6 @@ import com.kgaurav.kmem.data.Store;
 import com.kgaurav.kmem.exception.ConnectionFailedException;
 import com.kgaurav.kmem.model.*;
 import org.apache.log4j.Logger;
-import sun.java2d.loops.ProcessPath;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -62,13 +61,22 @@ public class Server implements Runnable {
                 Command command = new Gson().fromJson(request, Command.class);
                 switch (command.getCommandCode()) {
                     case CommandCode.GET:
-                        returnItem(command);
+                        returnItem(command, false);
                         break;
                     case CommandCode.PUT:
-                        saveItem(command);
+                        saveItem(command, false);
                         break;
                     case CommandCode.DELETE:
-                        deleteItem(command);
+                        deleteItem(command, false);
+                        break;
+                    case CommandCode.BACK_GET:
+                        returnItem(command, true);
+                        break;
+                    case CommandCode.BACK_PUT:
+                        saveItem(command, true);
+                        break;
+                    case CommandCode.BACK_DELETE:
+                        deleteItem(command, true);
                         break;
                 }
             } catch (IOException e) {
@@ -77,45 +85,52 @@ public class Server implements Runnable {
         }
     }
 
-    private void returnItem(Command command) {
+    private void returnItem(Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Item item = Store.getItem(internalItem.getId());
-        Socket socket = null;
-        OutputStream outputStream = null;
-        Response response = new Response();
-        response.setData(new Gson().toJson(item));
-        String data = new Gson().toJson(response);
-        try {
-            Util.sendToBalancer(data);
-        } catch (ConnectionFailedException e) {
-            LOGGER.error("Failed to connect with balancer");
+        if(!backup) {
+            Socket socket = null;
+            OutputStream outputStream = null;
+            Response response = new Response();
+            response.setData(new Gson().toJson(item));
+            String data = new Gson().toJson(response);
+
+            try {
+                Util.sendToBalancer(data);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Failed to connect with balancer");
+            }
         }
     }
 
-    private void saveItem(Command command) {
+    private void saveItem(Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Item item = new Item(internalItem.getKey(), internalItem.getValue());
         Store.putItem(internalItem.getId(), item);
-        Response response = new Response();
-        response.setMessage("Item is saved");
-        String data = new Gson().toJson(response);
-        try {
-            Util.sendToBalancer(data);
-        } catch (ConnectionFailedException e) {
-            LOGGER.error("Failed to connect with balancer");
+        if(!backup) {
+            Response response = new Response();
+            response.setMessage("Item is saved");
+            String data = new Gson().toJson(response);
+            try {
+                Util.sendToBalancer(data);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Failed to connect with balancer");
+            }
         }
     }
 
-    private void deleteItem(Command command) {
+    private void deleteItem(Command command, boolean backup) {
         InternalItem internalItem = command.getData();
         Store.removeItem(internalItem.getId());
-        Response response = new Response();
-        response.setMessage("Item is deleted");
-        String data = new Gson().toJson(response);
-        try {
-            Util.sendToBalancer(data);
-        } catch (ConnectionFailedException e) {
-            LOGGER.error("Failed to connect with balancer");
+        if(!backup) {
+            Response response = new Response();
+            response.setMessage("Item is deleted");
+            String data = new Gson().toJson(response);
+            try {
+                Util.sendToBalancer(data);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Failed to connect with balancer");
+            }
         }
     }
 

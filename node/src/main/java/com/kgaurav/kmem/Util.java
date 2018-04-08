@@ -1,6 +1,10 @@
 package com.kgaurav.kmem;
 
+import com.kgaurav.kmem.data.SyncSystem;
 import com.kgaurav.kmem.exception.ConnectionFailedException;
+import com.kgaurav.kmem.model.Command;
+import com.kgaurav.kmem.model.CommandCode;
+import com.kgaurav.kmem.model.Node;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -75,4 +79,33 @@ public class Util {
             closeSocket(me);
         }
     }
+
+    /**
+     * Sends message to a particular address
+     * @param address
+     * @param port
+     * @param data
+     * @return true if sent successfully false otherwise
+     */
+    public static boolean sendDataToNode(String address, int port, String data) throws ConnectionFailedException {
+        Socket me = null;
+        DataOutputStream outputStream = null;
+        try {
+            LOGGER.info("Connecting to destination");
+            me = new Socket(address, port);
+            LOGGER.info("Connected to destination");
+            outputStream = new DataOutputStream(me.getOutputStream());
+            outputStream.write(data.getBytes());
+            return true;
+        } catch (IOException e) {
+            LOGGER.error("Connection failed with balancer");
+            LOGGER.error(e.getMessage(), e);
+            throw new ConnectionFailedException(e.getMessage());
+        }
+        finally {
+            closeOutputStream(outputStream);
+            closeSocket(me);
+        }
+    }
+
 }
