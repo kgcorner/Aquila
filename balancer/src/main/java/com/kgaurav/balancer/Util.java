@@ -69,6 +69,7 @@ public class Util {
      */
     public static void closeSocket(Socket socket) {
         try {
+            LOGGER.info("Closing Socket");
             socket.close();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -141,11 +142,8 @@ public class Util {
     public static boolean returnData (Socket socket, String data) throws ConnectionFailedException {
         Socket me = socket;
         DataOutputStream outputStream = null;
-        DataInputStream inputStream = null;
-        String responseData = null;
         try {
             LOGGER.info("Connecting to destination");
-            LOGGER.info("Connected to destination");
             outputStream = new DataOutputStream(me.getOutputStream());
             outputStream.write(data.getBytes());
             return true;
@@ -157,7 +155,6 @@ public class Util {
         finally {
             closeOutputStream(outputStream);
             closeSocket(me);
-            closeInputStream(inputStream);
         }
     }
 

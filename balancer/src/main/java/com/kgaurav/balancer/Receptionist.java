@@ -6,7 +6,9 @@ import com.kgaurav.balancer.model.*;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -21,13 +23,7 @@ public class Receptionist implements Runnable{
     private static boolean running = false;
     private Socket clientConnection;
     private KeyStore keyStore = null;
-
-
-
-
-
-
-
+    private OutputStream outputStream;
     public static Receptionist getInstance() {
         if(INSTANCE == null)
             INSTANCE = new Receptionist();
@@ -35,11 +31,11 @@ public class Receptionist implements Runnable{
     }
 
     public void deployReceptionist() {
-        DataInputStream inputStream = null;
         try {
             receptionistSocket = new ServerSocket(0);
             running = true;
-            LOGGER.info("Receptionist Deployed successfully");
+            LOGGER.info("Receptionist Deployed successfully at "+receptionistSocket.getInetAddress().getHostAddress()
+            +":"+receptionistSocket.getLocalPort());
         } catch (IOException e) {
             LOGGER.error("Error occurred while deploying Receptionist");
             LOGGER.error(e.getMessage(), e);
@@ -186,4 +182,9 @@ public class Receptionist implements Runnable{
             LOGGER.error(e.getMessage(), e);
         }
     }
+
+    public String getRecenptionistAddress() {
+        return receptionistSocket.getInetAddress().getHostAddress()+":"+receptionistSocket.getLocalPort();
+    }
+
 }

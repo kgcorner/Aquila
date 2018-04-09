@@ -11,9 +11,9 @@ import java.util.TreeMap;
 
 public class KeyStore {
 
-    private static final KeyStore INSTANCE = new KeyStore();
     private static final Map<String, String> INTERNAL_ID_MAP = new TreeMap<>();
     private static final Map<Integer, NodeWrapper> NODE_MAP = new HashMap<>();
+    private static final KeyStore INSTANCE = new KeyStore();
     private static int nextIndex;
 
     private KeyStore() {

@@ -33,6 +33,10 @@ public class Application {
             e.printStackTrace();
         }
         server.startNodes(nodeCount);
+        Receptionist receptionist = Receptionist.getInstance();
+        receptionist.deployReceptionist();
+        Thread receptionistThread = new Thread(receptionist);
+        receptionistThread.start();
         LOGGER.info("Balancer started successfully");
     }
 }
