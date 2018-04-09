@@ -72,7 +72,8 @@ public class Util {
                 me = new Socket(Application.getLbAddress(), Application.getLbPort());
             LOGGER.info("Connected to balancer");
             outputStream = new DataOutputStream(me.getOutputStream());
-            outputStream.write(data.getBytes());
+            outputStream.write((data+"\n").getBytes());
+            LOGGER.info("response sent to balancer");
             return true;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");
@@ -100,7 +101,8 @@ public class Util {
             me = new Socket(address, port);
             LOGGER.info("Connected to destination");
             outputStream = new DataOutputStream(me.getOutputStream());
-            outputStream.write(data.getBytes());
+            outputStream.write((data+"\n").getBytes());
+            LOGGER.info("Response sent to node");
             return true;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");

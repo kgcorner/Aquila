@@ -68,7 +68,7 @@ public class NodeTest {
         Response response = new Gson().fromJson(responseFromAquila, Response.class);
         Assert.assertNotNull("Response is null", response);
         Assert.assertNotNull("Response Data is null", response.getData());
-        Assert.assertEquals("Response is unexpected", response.getData(), value);
+        Assert.assertEquals("Response is unexpected", value, response.getData());
     }
 
     @Given("^Aquila is started with '(\\d+)' node$")

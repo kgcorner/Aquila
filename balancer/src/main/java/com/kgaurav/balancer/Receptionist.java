@@ -24,6 +24,7 @@ public class Receptionist implements Runnable{
     private Socket clientConnection;
     private KeyStore keyStore = null;
     private OutputStream outputStream;
+    private static final int PORT = Integer.parseInt(Util.loadProperties().getProperty("receptionist.port"));
     public static Receptionist getInstance() {
         if(INSTANCE == null)
             INSTANCE = new Receptionist();
@@ -32,7 +33,7 @@ public class Receptionist implements Runnable{
 
     public void deployReceptionist() {
         try {
-            receptionistSocket = new ServerSocket(0);
+            receptionistSocket = new ServerSocket(PORT);
             running = true;
             LOGGER.info("Receptionist Deployed successfully at "+receptionistSocket.getInetAddress().getHostAddress()
             +":"+receptionistSocket.getLocalPort());
@@ -100,14 +101,17 @@ public class Receptionist implements Runnable{
             item.setId(nodeInfo.getInternalId());
             item.setKey(request.getKey());
             item.setValue(request.getValue());
+            LOGGER.info("Creating command");
             Command command = new Command();
             command.setCommandCode(CommandCode.PUT);
             command.setData(item);
             String commandData = new Gson().toJson(command);
             try {
+                LOGGER.info("Asking node to store data");
                 String responseData = Util.sendAndReceiveDataToNode(node.getAddress(), node.getPort(), commandData);
                 Response responseFromNode = new Gson().fromJson(responseData, Response.class);
                 response.setData(responseFromNode.getMessage());
+                LOGGER.info("Response received from Node");
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Error occurred while getting response from node");
                 LOGGER.error(e.getMessage(), e);
@@ -121,22 +125,25 @@ public class Receptionist implements Runnable{
         Command command = new Command();
         command.setCommandCode(CommandCode.GET);
         InternalItem item = new InternalItem();
+        item.setKey(key);
+        command.setData(item);
         NodeInfo info = keyStore.getNodeInfo(key);
         if(info == null) {
             sendNoItemFound(clientConnection);
         }
         else {
             Node node = info.getNode();
+            item.setId(info.getInternalId());
             String commandData = new Gson().toJson(command);
             try {
                 String responseData = Util.sendAndReceiveDataToNode(node.getAddress(), node.getPort(), commandData);
                 Response response = new Gson().fromJson(responseData, Response.class);
-                if(response != null) {
+                if(response == null) {
                     sendNoItemFound(clientConnection);
                 }
                 InternalItem internalItem = new Gson().fromJson(response.getData(), InternalItem.class);
                 response = new Response();
-                response.setData(item.getValue());
+                response.setData(internalItem.getValue());
                 sendItem(clientConnection, response);
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Error occurred while getting response from node");

@@ -43,7 +43,7 @@ public class KeyStore {
             return null;
         }
         String internalId = INTERNAL_ID_MAP.get(key);
-        int nodeIndex = Integer.parseInt(internalId.substring(internalId.lastIndexOf(".")), internalId.length());
+        int nodeIndex = Integer.parseInt(internalId.substring(internalId.lastIndexOf(".")+1, internalId.length()));
         if(!NODE_MAP.containsKey(nodeIndex)) {
             return null;
         }
@@ -60,6 +60,7 @@ public class KeyStore {
     public NodeInfo storeKey(String key) {
         String internalId = Util.generateInternalKey();
         internalId += ("."+nextIndex);
+        INTERNAL_ID_MAP.put(key, internalId);
         NodeWrapper wrapper = NODE_MAP.get(nextIndex);
         wrapper.setKeyCount(wrapper.getKeyCount()+1);
         Node node = wrapper.getNode();

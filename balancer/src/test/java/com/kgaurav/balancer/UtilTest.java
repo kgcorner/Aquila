@@ -20,22 +20,19 @@ public class UtilTest {
     public static String  sendAndReceiveDataToNode(String address, int port, String data) throws ConnectionFailedException {
         Socket me = null;
         DataOutputStream outputStream = null;
-        DataInputStream inputStream = null;
+        InputStream inputStream = null;
         String responseData = null;
         try {
             me = new Socket(address, port);
             outputStream = new DataOutputStream(me.getOutputStream());
-            outputStream.write(data.getBytes());
-            outputStream.flush();
-            me.shutdownOutput();
+            inputStream = me.getInputStream();
+            outputStream.write((data+"\n").getBytes());
             LOGGER.info("Data written from client");
-            inputStream = new DataInputStream(me.getInputStream());
             responseData = convertStreamToString(inputStream);
             return responseData;
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             closeOutputStream(outputStream);
             closeInputStream(inputStream);
             closeSocket(me);
@@ -85,19 +82,26 @@ public class UtilTest {
         String line = null;
 
         try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
+            sb.append(reader.readLine());
         } catch (IOException e) {
             throw e;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw e;
-            }
         }
 
         return sb.toString();
+    }
+
+    public static boolean runCommand(String command) {
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+
+            if(!process.isAlive()) {
+                InputStream stream = process.getErrorStream();
+                String output =IOUtils.toString(stream);
+                LOGGER.error(output);
+            }
+            return process.isAlive();
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

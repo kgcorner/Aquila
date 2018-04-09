@@ -47,19 +47,10 @@ public class Util {
         String line = null;
 
         try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
+            sb.append(reader.readLine());
         } catch (IOException e) {
             throw e;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw e;
-            }
         }
-
         return sb.toString();
     }
 
@@ -117,19 +108,20 @@ public class Util {
             me = new Socket(address, port);
             LOGGER.info("Connected to destination");
             outputStream = new DataOutputStream(me.getOutputStream());
-            outputStream.write(data.getBytes());
+            outputStream.write((data+"\n").getBytes());
+            LOGGER.info("Data sent to destination");
             inputStream = new DataInputStream(me.getInputStream());
             responseData = convertStreamToString(inputStream);
+            LOGGER.info("Response Data:"+responseData);
             return responseData;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");
             LOGGER.error(e.getMessage(), e);
             throw new ConnectionFailedException(e.getMessage());
-        }
-        finally {
+        } finally {
             closeOutputStream(outputStream);
-            closeSocket(me);
             closeInputStream(inputStream);
+            closeSocket(me);
         }
     }
 
@@ -145,7 +137,7 @@ public class Util {
         try {
             LOGGER.info("Connecting to destination");
             outputStream = new DataOutputStream(me.getOutputStream());
-            outputStream.write(data.getBytes());
+            outputStream.write((data+"\n").getBytes());
             return true;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");

@@ -97,7 +97,7 @@ public class BalancerServer implements Runnable {
     private void startMainNode(Node backup1, Node backup2) {
         String command = null;
         StringBuilder sb = new StringBuilder();
-        sb.append("java -jar "+properties.getProperty(PATH_TO_NODE_APP));
+        sb.append("java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+properties.getProperty(PATH_TO_NODE_APP));
         sb.append(" "+serverSocket.getInetAddress().getHostAddress());
         sb.append(" "+serverSocket.getLocalPort());
         sb.append(" main");
@@ -105,6 +105,7 @@ public class BalancerServer implements Runnable {
         sb.append(" "+backup1.getPort());
         sb.append(" "+backup2.getAddress());
         sb.append(" "+backup2.getPort());
+        sb.append(" ");
         command = sb.toString();
         if(Util.runCommand(command)) {
             try {

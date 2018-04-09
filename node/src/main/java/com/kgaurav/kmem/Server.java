@@ -162,17 +162,9 @@ public class Server implements Runnable {
         String line = null;
 
         try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
+            sb.append(reader.readLine());
         } catch (IOException e) {
             throw e;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                throw e;
-            }
         }
 
         return sb.toString();
