@@ -1,4 +1,5 @@
 rootProject.name = 'aquila'
-include 'node'
 include 'balancer'
+include 'node'
+
 

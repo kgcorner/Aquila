@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.Random;
@@ -61,6 +62,19 @@ public class Util {
     public static void closeSocket(Socket socket) {
         try {
             LOGGER.info("Closing Socket");
+            socket.close();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Closes the {@link Socket}
+     * @param socket
+     */
+    public static void closeSocket(ServerSocket socket) {
+        try {
+            LOGGER.info("Closing Server Socket");
             socket.close();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -138,6 +152,35 @@ public class Util {
             LOGGER.info("Connecting to destination");
             outputStream = new DataOutputStream(me.getOutputStream());
             outputStream.write((data+"\n").getBytes());
+            return true;
+        } catch (IOException e) {
+            LOGGER.error("Connection failed with balancer");
+            LOGGER.error(e.getMessage(), e);
+            throw new ConnectionFailedException(e.getMessage());
+        }
+        finally {
+            closeOutputStream(outputStream);
+            closeSocket(me);
+        }
+    }
+
+    /**
+     * Sends message to a particular address
+     * @param address
+     * @param port
+     * @param data
+     * @return true if sent successfully false otherwise
+     */
+    public static boolean sendDataToNode(String address, int port, String data) throws ConnectionFailedException {
+        Socket me = null;
+        DataOutputStream outputStream = null;
+        try {
+            LOGGER.info("Connecting to destination");
+            me = new Socket(address, port);
+            LOGGER.info("Connected to destination");
+            outputStream = new DataOutputStream(me.getOutputStream());
+            outputStream.write((data+"\n").getBytes());
+            LOGGER.info("Response sent to node");
             return true;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");

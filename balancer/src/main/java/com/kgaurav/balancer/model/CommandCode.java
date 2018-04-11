@@ -9,4 +9,5 @@ public class CommandCode {
     public static final int BACK_DELETE = 5;
     public static final int BREATH = 7;
     public static final int ADD_BACKUP_NODE = 6;
+    public static final int SHUTDOWN = 100;
 }

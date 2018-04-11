@@ -82,11 +82,21 @@ public class Server implements Runnable {
                     case CommandCode.ADD_BACKUP_NODE:
                         addBackupNode(connectionSocket, command);
                         break;
+                    case CommandCode.SHUTDOWN:
+                        shutDown();
+                        break;
                 }
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         }
+    }
+
+    private void shutDown() {
+        LOGGER.info("Shutting Down node at "+serverSocket.getInetAddress().getHostAddress()+":"+
+                serverSocket.getLocalPort());
+        this.running = false;
+        Util.closeSocket(serverSocket);
     }
 
     private void addBackupNode(Socket connectionSocket, Command command) {

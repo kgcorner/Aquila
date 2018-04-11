@@ -15,6 +15,7 @@ public class Application {
     private static int type = -1;
     public static boolean STOP = false;
     public static void main(String[] args) {
+
         if(args.length != 7) {
             if(args.length != 3) {
                 LOGGER.error("Total arguments needed 7 found "+args.length);

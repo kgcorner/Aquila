@@ -20,7 +20,7 @@ repositories {
 }
 
 task cucumber() {
-    dependsOn assemble, compileTestJava
+    dependsOn assemble, compileTestJava, jar
     doLast {
         javaexec {
             main = "cucumber.api.cli.Main"

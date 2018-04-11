@@ -1,12 +1,12 @@
 package com.kgaurav.balancer;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kgaurav.balancer.exception.ConnectionFailedException;
 import com.kgaurav.balancer.model.*;
 import org.apache.log4j.Logger;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -59,16 +59,24 @@ public class Receptionist implements Runnable{
                 if(request != null) {
                     switch (request.getRequestCode()) {
                         case RequestCode.GET:
+                            LOGGER.info("Fetching Data");
                             returnData(clientConnection, request);
                             break;
                         case RequestCode.SET:
-                            saveData(clientConnection, request);
+                            LOGGER.info("Saving Data");
+                            saveData(clientConnection, request, false);
                             break;
                         case RequestCode.PUT:
-                            updateData(clientConnection, request);
+                            LOGGER.info("Updating Data");
+                            saveData(clientConnection, request, true);
                             break;
                         case RequestCode.DEL:
+                            LOGGER.info("Deleting Data");
                             deleteData(clientConnection, request);
+                            break;
+                        case RequestCode.INFO:
+                            LOGGER.info("Returing Info");
+                            sendInfo(clientConnection, request);
                             break;
                     }
 
@@ -79,7 +87,7 @@ public class Receptionist implements Runnable{
                 LOGGER.error(e.getMessage(), e);
             }
             catch (Exception e) {
-                LOGGER.error("Error occurred while accepting client connection");
+                LOGGER.error("Unknown Error occurred while accepting client connection");
                 LOGGER.error(e.getMessage(), e);
             }
             finally {
@@ -88,7 +96,22 @@ public class Receptionist implements Runnable{
         }
     }
 
-    private void saveData(Socket clientConnection, Request request) {
+    /**
+     * Send information about running main and backup nodes
+     * @param clientConnection
+     * @param request
+     */
+    private void sendInfo(Socket clientConnection, Request request) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("main", BalancerServer.getInstance().getMainNodes().size());
+        jsonObject.addProperty("available", BalancerServer.getInstance().getAvailableBackupNodes().size());
+        jsonObject.addProperty("linked", BalancerServer.getInstance().getLinkedBackupNodes().size());
+        Response response = new Response();
+        response.setData(jsonObject.toString());
+        sendItem(clientConnection, response);
+    }
+
+    private void saveData(Socket clientConnection, Request request, boolean isUpdate) {
         String key = request.getKey();
         Response response = new Response();
         if(Util.isNullOrEmpty(key)) {
@@ -110,7 +133,10 @@ public class Receptionist implements Runnable{
                 LOGGER.info("Asking node to store data");
                 String responseData = Util.sendAndReceiveDataToNode(node.getAddress(), node.getPort(), commandData);
                 Response responseFromNode = new Gson().fromJson(responseData, Response.class);
-                response.setData(responseFromNode.getMessage());
+                if(!isUpdate)
+                    response.setData(responseFromNode.getMessage());
+                else
+                    response.setData("Item updated successfully");
                 LOGGER.info("Response received from Node");
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Error occurred while getting response from node");
@@ -174,20 +200,42 @@ public class Receptionist implements Runnable{
         }
     }
 
-    private void updateData(Socket clientConnection, Request request) {
-    }
-
     private void deleteData(Socket clientConnection, Request request) {
+        String key = request.getKey();
+        Response response = new Response();
+        if(Util.isNullOrEmpty(key)) {
+            response.setData("Invalid key");
+        }
+        else {
+            NodeInfo nodeInfo = keyStore.storeKey(key);
+            Node node = nodeInfo.getNode();
+            InternalItem item = new InternalItem();
+            item.setId(nodeInfo.getInternalId());
+            item.setKey(request.getKey());
+            LOGGER.info("Creating command");
+            Command command = new Command();
+            command.setCommandCode(CommandCode.DELETE);
+            command.setData(item);
+            String commandData = new Gson().toJson(command);
+            try {
+                LOGGER.info("Asking node to store data");
+                String responseData = Util.sendAndReceiveDataToNode(node.getAddress(), node.getPort(), commandData);
+                Response responseFromNode = new Gson().fromJson(responseData, Response.class);
+                response.setData(responseFromNode.getMessage());
+                LOGGER.info("Response received from Node");
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Error occurred while getting response from node");
+                LOGGER.error(e.getMessage(), e);
+            }
+            sendItem(clientConnection, response);
+        }
     }
 
     public void stopReceptionist() {
-        running = false;
-        try {
-            receptionistSocket.close();
-        } catch (IOException e) {
-            LOGGER.error("Error occurred while shutting down Receptionist");
-            LOGGER.error(e.getMessage(), e);
-        }
+        LOGGER.info("Shutting Down receptionist at "+receptionistSocket.getInetAddress().getHostAddress()+":"+
+                receptionistSocket.getLocalPort());
+        this.running = false;
+        Util.closeSocket(receptionistSocket);
     }
 
     public String getRecenptionistAddress() {

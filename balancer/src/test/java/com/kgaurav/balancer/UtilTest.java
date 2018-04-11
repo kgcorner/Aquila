@@ -90,7 +90,7 @@ public class UtilTest {
         return sb.toString();
     }
 
-    public static boolean runCommand(String command) {
+    public static Process runCommand(String command) {
         try {
             Process process = Runtime.getRuntime().exec(command);
 
@@ -99,9 +99,16 @@ public class UtilTest {
                 String output =IOUtils.toString(stream);
                 LOGGER.error(output);
             }
-            return process.isAlive();
+            return process;
         } catch (IOException e) {
-            return false;
+            return null;
         }
+    }
+
+    public static String getApplicationBinaryLocation() {
+        String path = UtilTest.class.getResource("").getPath();
+        path = path+"../../../../../../libs/balancer-1.0-SNAPSHOT.jar";
+        path = path.substring(1);
+        return path;
     }
 }

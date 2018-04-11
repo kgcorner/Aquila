@@ -8,6 +8,7 @@ import com.kgaurav.kmem.model.Node;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -137,4 +138,11 @@ public class Util {
         return string == null || string.trim().length() < 1;
     }
 
+    public static void closeSocket(ServerSocket serverSocket) {
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
 }

@@ -8,6 +8,8 @@ import org.apache.log4j.Logger;
 public class Application {
     private static final Logger LOGGER = Logger.getLogger(Application.class);
     public static void main(String[] args) {
+
+
         if(args.length != 1) {
             LOGGER.error("Usage:");
             LOGGER.error("<Application name> <number of nodes>");
@@ -38,5 +40,19 @@ public class Application {
         Thread receptionistThread = new Thread(receptionist);
         receptionistThread.start();
         LOGGER.info("Balancer started successfully");
+
+
+
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Application.shutDown();
+            }
+        }));
+    }
+
+    public static void shutDown() {
+        BalancerServer.getInstance().shutDownBalancer();
+        Receptionist.getInstance().stopReceptionist();
     }
 }

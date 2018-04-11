@@ -3,8 +3,8 @@ package com.kgaurav.balancer;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.kgaurav.balancer.model.Node;
-import com.kgaurav.balancer.model.Response;
+import com.kgaurav.balancer.exception.ConnectionFailedException;
+import com.kgaurav.balancer.model.*;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -97,7 +97,8 @@ public class BalancerServer implements Runnable {
     private void startMainNode(Node backup1, Node backup2) {
         String command = null;
         StringBuilder sb = new StringBuilder();
-        sb.append("java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+properties.getProperty(PATH_TO_NODE_APP));
+        //sb.append("java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+properties.getProperty(PATH_TO_NODE_APP));
+        sb.append("java -jar "+properties.getProperty(PATH_TO_NODE_APP));
         sb.append(" "+serverSocket.getInetAddress().getHostAddress());
         sb.append(" "+serverSocket.getLocalPort());
         sb.append(" main");
@@ -191,4 +192,43 @@ public class BalancerServer implements Runnable {
     public List<Node> getLinkedBackupNodes() {
         return Collections.unmodifiableList(linkedBackupNodes);
     }
+
+    public void shutDownBalancer() {
+        LOGGER.info("Shutting Down Balancer at "+serverSocket.getInetAddress().getHostAddress()+":"+
+                serverSocket.getLocalPort());
+        this.running = false;
+        Util.closeSocket(serverSocket);
+        shutDownNodes();
+    }
+
+    private void shutDownNodes() {
+        Command command = new Command();
+        command.setCommandCode(CommandCode.SHUTDOWN);
+        String commandStr = new Gson().toJson(command);
+        for(Node node: this.availableBackupNodes) {
+            try {
+                Util.sendDataToNode(node.getAddress(), node.getPort(), commandStr);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Unable to connect to node: "+ node.getAddress()+":"+node.getPort()+" for shutdown");
+            }
+        }
+
+        for(Node node: this.mainNodes) {
+            try {
+                Util.sendDataToNode(node.getAddress(), node.getPort(), commandStr);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Unable to connect to node: "+ node.getAddress()+":"+node.getPort()+" for shutdown");
+            }
+        }
+
+        for(Node node: this.linkedBackupNodes) {
+            try {
+                Util.sendDataToNode(node.getAddress(), node.getPort(), commandStr);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Unable to connect to node: "+ node.getAddress()+":"+node.getPort()+" for shutdown");
+            }
+        }
+    }
+
+
 }
