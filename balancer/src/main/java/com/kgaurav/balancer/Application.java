@@ -2,6 +2,10 @@ package com.kgaurav.balancer;
 
 import org.apache.log4j.Logger;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * Created by admin on 4/5/2018.
  */
@@ -27,8 +31,7 @@ public class Application {
         LOGGER.info(banner);
         BalancerServer server = BalancerServer.getInstance();
         server.startServer();
-        Thread serverThread = new Thread(server);
-        serverThread.start();
+        startBalancer(server);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -37,8 +40,7 @@ public class Application {
         server.startNodes(nodeCount);
         Receptionist receptionist = Receptionist.getInstance();
         receptionist.deployReceptionist();
-        Thread receptionistThread = new Thread(receptionist);
-        receptionistThread.start();
+        startReceptionist(receptionist);
         LOGGER.info("Balancer started successfully");
 
 
@@ -54,5 +56,15 @@ public class Application {
     public static void shutDown() {
         BalancerServer.getInstance().shutDownBalancer();
         Receptionist.getInstance().stopReceptionist();
+    }
+
+    private static void startBalancer(BalancerServer server) {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(server);
+    }
+
+    private static void startReceptionist(Receptionist server) {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(server);
     }
 }

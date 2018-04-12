@@ -29,6 +29,7 @@ public class UtilTest {
             outputStream.write((data+"\n").getBytes());
             LOGGER.info("Data written from client");
             responseData = convertStreamToString(inputStream);
+            LOGGER.info("Data received on client:"+responseData);
             return responseData;
         } catch (IOException e) {
             e.printStackTrace();

@@ -33,14 +33,14 @@ public class NodeTest {
     @When("^Balancer is started with '(\\d+)' nodes$")
     public void balancerIsStartedWithNodes(int nodes) throws Throwable {
         String path = UtilTest.getApplicationBinaryLocation();
-        //String command = "java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+path+" "+nodes;
-        String command = "java -jar "+path+" "+nodes;
-        LOGGER.info("Running command "+command);
+        String command = "java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+path+" "+nodes;
+        //String command = "java -jar "+path+" "+nodes;
+        System.out.println("Running command "+command);
         appStartProcess = UtilTest.runCommand(command);
         Assert.assertTrue("Application start failed", appStartProcess != null &&
                 appStartProcess.isAlive());
         LOGGER.info("Sleeping for 10 sec");
-        Thread.sleep(20000);
+        Thread.sleep(10000);
         started = true;
         /*String[] arg= new String[1];
         arg[0] = nodes+"";
@@ -159,6 +159,7 @@ public class NodeTest {
         Assert.assertNotNull("Response is null", response);
         Assert.assertNotNull("Response Data is null", response.getData());
         Assert.assertEquals("Response is unexpected", response.getData(), massage);
-        appStartProcess.destroyForcibly();
+        if(appStartProcess != null)
+            appStartProcess.destroyForcibly();
     }
 }

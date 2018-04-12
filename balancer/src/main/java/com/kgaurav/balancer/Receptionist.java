@@ -53,6 +53,7 @@ public class Receptionist implements Runnable{
         while (running) {
             try {
                 this.clientConnection = receptionistSocket.accept();
+                LOGGER.debug("received request from :"+clientConnection.getInetAddress().getHostAddress()+":"+clientConnection.getPort());
                 inputStream = new DataInputStream(clientConnection.getInputStream());
                 String requestData = Util.convertStreamToString(inputStream);
                 Request request = new Gson().fromJson(requestData, Request.class);
@@ -112,6 +113,7 @@ public class Receptionist implements Runnable{
     }
 
     private void saveData(Socket clientConnection, Request request, boolean isUpdate) {
+        LOGGER.debug("Inside save data method");
         String key = request.getKey();
         Response response = new Response();
         if(Util.isNullOrEmpty(key)) {
@@ -131,8 +133,12 @@ public class Receptionist implements Runnable{
             String commandData = new Gson().toJson(command);
             try {
                 LOGGER.info("Asking node to store data");
+                if(commandData != null && isUpdate) {
+                    LOGGER.error("this is for test");
+                }
                 String responseData = Util.sendAndReceiveDataToNode(node.getAddress(), node.getPort(), commandData);
                 Response responseFromNode = new Gson().fromJson(responseData, Response.class);
+
                 if(!isUpdate)
                     response.setData(responseFromNode.getMessage());
                 else
@@ -193,7 +199,9 @@ public class Receptionist implements Runnable{
     private void sendItem(Socket clientConnection, Response response) {
         String responseData = new Gson().toJson(response);
         try {
+            LOGGER.debug("Sending Item to client");
             Util.returnData(clientConnection, responseData);
+            LOGGER.debug("Item sent to client");
         } catch (ConnectionFailedException e) {
             LOGGER.error("Error occurred while sending response to client");
             LOGGER.error(e.getMessage(), e);

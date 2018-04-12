@@ -50,6 +50,7 @@ public class Util {
         try {
             sb.append(reader.readLine());
         } catch (IOException e) {
+            LOGGER.error(e.getMessage());
             throw e;
         }
         return sb.toString();
@@ -61,7 +62,6 @@ public class Util {
      */
     public static void closeSocket(Socket socket) {
         try {
-            LOGGER.info("Closing Socket");
             socket.close();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -126,7 +126,7 @@ public class Util {
             LOGGER.info("Data sent to destination");
             inputStream = new DataInputStream(me.getInputStream());
             responseData = convertStreamToString(inputStream);
-            LOGGER.info("Response Data:"+responseData);
+            //LOGGER.info("Response Data:"+responseData);
             return responseData;
         } catch (IOException e) {
             LOGGER.error("Connection failed with balancer");
@@ -149,12 +149,13 @@ public class Util {
         Socket me = socket;
         DataOutputStream outputStream = null;
         try {
-            LOGGER.info("Connecting to destination");
+            LOGGER.info("Waiting for opening output stream");
             outputStream = new DataOutputStream(me.getOutputStream());
             outputStream.write((data+"\n").getBytes());
+            //LOGGER.info("Got stream writing data");
             return true;
         } catch (IOException e) {
-            LOGGER.error("Connection failed with balancer");
+            LOGGER.error("Connection failed with "+socket.getInetAddress().getHostAddress()+":"+socket.getLocalPort());
             LOGGER.error(e.getMessage(), e);
             throw new ConnectionFailedException(e.getMessage());
         }
