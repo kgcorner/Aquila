@@ -2,4 +2,4 @@ language: java
 jdk:
   - oraclejdk8
 script:
-- bundle exec rake cucumber build
+- exec cucumber build
