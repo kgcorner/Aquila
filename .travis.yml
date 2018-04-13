@@ -4,4 +4,6 @@ jdk:
 before_install:
  - chmod +x gradlew
 script:
-- gradle cucumber build
+- gradle build
+- ls -ltrhR
+- gradle cucumber
