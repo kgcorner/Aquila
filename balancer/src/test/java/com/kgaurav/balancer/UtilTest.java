@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UtilTest {
     private static final Logger LOGGER = Logger.getLogger(UtilTest.class);
@@ -108,8 +110,19 @@ public class UtilTest {
 
     public static String getApplicationBinaryLocation() {
         String path = UtilTest.class.getResource("").getPath();
-        path = path+"../../../../../../../libs/balancer-1.0-SNAPSHOT.jar";
-        path = path.substring(1);
+        String pathTillBuild = path.split("build")[0];
+        path = pathTillBuild+"build/libs";
+        File folder  = new File(path);
+        File[] files = folder.listFiles();
+        for(File file : files) {
+            String regEx = "^balancer.*jar$";
+            Pattern pattern = Pattern.compile(regEx);
+            Matcher matcher = pattern.matcher(file.getName());
+            if(matcher.find()) {
+                path = file.getAbsolutePath();
+                break;
+            }
+        }
         return path;
     }
 }
