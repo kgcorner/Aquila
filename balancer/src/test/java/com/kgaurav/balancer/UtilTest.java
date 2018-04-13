@@ -113,15 +113,22 @@ public class UtilTest {
         String pathTillBuild = path.split("build")[0];
         path = pathTillBuild+"build/libs";
         File folder  = new File(path);
-        File[] files = folder.listFiles();
-        for(File file : files) {
-            String regEx = "^balancer.*jar$";
-            Pattern pattern = Pattern.compile(regEx);
-            Matcher matcher = pattern.matcher(file.getName());
-            if(matcher.find()) {
-                path = file.getAbsolutePath();
-                break;
+        if(folder.exists()) {
+            File[] files = folder.listFiles();
+            if(files != null) {
+                for (File file : files) {
+                    String regEx = "^balancer.*jar$";
+                    Pattern pattern = Pattern.compile(regEx);
+                    Matcher matcher = pattern.matcher(file.getName());
+                    if (matcher.find()) {
+                        path = file.getAbsolutePath();
+                        break;
+                    }
+                }
             }
+        }
+        else {
+            LOGGER.error("Jar file is not build yet");
         }
         return path;
     }
