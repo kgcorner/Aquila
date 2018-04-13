@@ -5,5 +5,7 @@ before_install:
  - chmod +x gradlew
 script:
 - gradle build
-- ls -ltrhR
+- pDir=`pwd`
+- export BALANCER_BIN_PATH = ${pDir}/balancer/build/libs/balancer-1.0-SNAPSHOT.jar
+- export NODE_BIN_PATH = ${pDir}/node/build/libs/node-1.0-SNAPSHOT.jar
 - gradle cucumber
