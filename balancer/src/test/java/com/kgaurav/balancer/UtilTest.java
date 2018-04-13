@@ -108,7 +108,7 @@ public class UtilTest {
 
     public static String getApplicationBinaryLocation() {
         String path = UtilTest.class.getResource("").getPath();
-        path = path+"../../../../../../libs/balancer-1.0-SNAPSHOT.jar";
+        path = path+"../../../../../../../libs/balancer-1.0-SNAPSHOT.jar";
         path = path.substring(1);
         return path;
     }
