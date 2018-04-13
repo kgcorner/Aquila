@@ -5,4 +5,5 @@ before_install:
  - chmod +x gradlew
 script:
 - gradle build
+- ls -ltrhR
 - gradle cucumber
