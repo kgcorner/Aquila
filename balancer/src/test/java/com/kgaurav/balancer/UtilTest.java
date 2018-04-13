@@ -143,8 +143,12 @@ public class UtilTest {
 
     public static String getAppRoot() {
         String path = Util.class.getResource("").getPath();
+        if(path.startsWith("file:/")) {
+            path = path.replace("file:/","");
+        }
         String pathTillBuild = path.split("aquila")[0];
         path = pathTillBuild+"aquila";
+        LOGGER.info("Deduced app root path:"+path);
         File file = new File(path);
         if(!file.exists()) {
             path = null;
