@@ -77,7 +77,7 @@ public class BalancerServer implements Runnable {
     }
 
     private void startBackupNode(){
-        String command = "java -jar "+properties.getProperty(PATH_TO_NODE_APP);
+        String command = "java -jar "+Util.getPathOfNodesBinary();
         command += " "+serverSocket.getInetAddress().getHostAddress()+" "+ serverSocket.getLocalPort()+" backup";
         LOGGER.info("Starting backup node");
         if(Util.runCommand(command)) {

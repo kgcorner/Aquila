@@ -110,8 +110,8 @@ public class UtilTest {
 
     public static String getApplicationBinaryLocation() {
         String path = UtilTest.class.getResource("").getPath();
-        String pathTillBuild = path.split("build")[0];
-        path = pathTillBuild+"build/libs";
+        String pathTillBuild = path.split("balancer/build")[0];
+        path = pathTillBuild+"balancer/build/libs";
         File folder  = new File(path);
         if(folder.exists()) {
             File[] files = folder.listFiles();

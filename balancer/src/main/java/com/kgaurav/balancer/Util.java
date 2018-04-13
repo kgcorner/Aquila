@@ -10,6 +10,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by admin on 4/5/2018.
@@ -200,5 +202,47 @@ public class Util {
 
     public static boolean isNullOrEmpty(String string) {
         return string == null || string.trim().length() < 1;
+    }
+
+    public static String getPathOfNodesBinary() {
+        String path = Util.loadProperties().getProperty("path.to.node");
+        if(path == null || path.trim().length() <1 ){
+            path = System.getenv("NODE_BIN_PATH");
+            if(path == null || path.trim().length() <1 ){
+                path = getAppRoot();
+                if(path == null || path.trim().length() <1 ){
+                    throw new IllegalStateException("Can't find node's binary");
+                }
+                else {
+                    path = path+"/node/build/libs";
+                    File nodeFolder = new File(path);
+                    if(!nodeFolder.exists()) {
+                        throw new IllegalStateException("Node is not available");
+                    }
+                    File[] files = nodeFolder.listFiles();
+                    for(File file : files) {
+                        String regex = "^node.*jar$";
+                        Pattern pattern = Pattern.compile(regex);
+                        Matcher matcher = pattern.matcher(file.getName());
+                        if(matcher.find()) {
+                            path = file.getAbsolutePath();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        throw new IllegalStateException("Make sure node's path is set");
+    }
+
+    public static String getAppRoot() {
+        String path = Util.class.getResource("").getPath();
+        String pathTillBuild = path.split("aquila")[0];
+        path = pathTillBuild+"aquila";
+        File file = new File(path);
+        if(!file.exists()) {
+            path = null;
+        }
+        return path;
     }
 }
