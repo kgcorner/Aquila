@@ -108,27 +108,46 @@ public class UtilTest {
         }
     }
 
-    public static String getApplicationBinaryLocation() {
-        String path = UtilTest.class.getResource("").getPath();
-        String pathTillBuild = path.split("balancer/build")[0];
-        path = pathTillBuild+"balancer/build/libs";
-        File folder  = new File(path);
-        if(folder.exists()) {
-            File[] files = folder.listFiles();
-            if(files != null) {
-                for (File file : files) {
-                    String regEx = "^balancer.*jar$";
-                    Pattern pattern = Pattern.compile(regEx);
-                    Matcher matcher = pattern.matcher(file.getName());
-                    if (matcher.find()) {
-                        path = file.getAbsolutePath();
-                        break;
+    public static String getPathOfBalancerBinary() {
+        String path = "";
+        if(path == null || path.trim().length() <1 ){
+            path = System.getenv("BALANCER_BIN_PATH");
+            if(path == null || path.trim().length() <1 ){
+                path = getAppRoot();
+                if(path == null || path.trim().length() <1 ){
+                    throw new IllegalStateException("Can't find node's binary");
+                }
+                else {
+                    path = path+"/balancer/build/libs";
+                    File nodeFolder = new File(path);
+                    if(!nodeFolder.exists()) {
+                        throw new IllegalStateException("Node is not available");
+                    }
+                    File[] files = nodeFolder.listFiles();
+                    for(File file : files) {
+                        String regex = "^balancer.*jar$";
+                        Pattern pattern = Pattern.compile(regex);
+                        Matcher matcher = pattern.matcher(file.getName());
+                        if(matcher.find()) {
+                            path = file.getAbsolutePath();
+                            break;
+                        }
                     }
                 }
             }
         }
-        else {
-            LOGGER.error("Jar file is not build yet");
+        if(path != null)
+            return path;
+        throw new IllegalStateException("Make sure node's path is set");
+    }
+
+    public static String getAppRoot() {
+        String path = Util.class.getResource("").getPath();
+        String pathTillBuild = path.split("aquila")[0];
+        path = pathTillBuild+"aquila";
+        File file = new File(path);
+        if(!file.exists()) {
+            path = null;
         }
         return path;
     }

@@ -32,7 +32,7 @@ public class NodeTest {
 
     @When("^Balancer is started with '(\\d+)' nodes$")
     public void balancerIsStartedWithNodes(int nodes) throws Throwable {
-        String path = UtilTest.getApplicationBinaryLocation();
+        String path = UtilTest.getPathOfBalancerBinary();
         //String command = "java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+path+" "+nodes;
         String command = "java -jar "+path+" "+nodes;
         System.out.println("Running command "+command);
@@ -107,7 +107,7 @@ public class NodeTest {
     @Given("^Aquila is started with '(\\d+)' node$")
     public void aquilaIsStartedWithNode(int arg0) throws Throwable {
         if(!started) {
-            String path = UtilTest.getApplicationBinaryLocation();
+            String path = UtilTest.getPathOfBalancerBinary();
             String command = "java -jar "+path+" "+1;
             appStartProcess = UtilTest.runCommand(command);
             Assert.assertTrue("Application start failed", appStartProcess != null &&

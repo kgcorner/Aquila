@@ -206,8 +206,12 @@ public class Util {
 
     public static String getPathOfNodesBinary() {
         String path = Util.loadProperties().getProperty("path.to.node");
+        if(path != null)
+            LOGGER.info("Node path in property file:"+path+" length:"+path.trim().length());
         if(path == null || path.trim().length() <1 ){
+            LOGGER.info("Node path not set in property file");
             path = System.getenv("NODE_BIN_PATH");
+            LOGGER.info("Node path not set in environment");
             if(path == null || path.trim().length() <1 ){
                 path = getAppRoot();
                 if(path == null || path.trim().length() <1 ){
@@ -225,6 +229,7 @@ public class Util {
                         Pattern pattern = Pattern.compile(regex);
                         Matcher matcher = pattern.matcher(file.getName());
                         if(matcher.find()) {
+                            LOGGER.info("Node's path set dynamically");
                             path = file.getAbsolutePath();
                             break;
                         }
@@ -232,13 +237,19 @@ public class Util {
                 }
             }
         }
+        if(path != null)
+            return path;
         throw new IllegalStateException("Make sure node's path is set");
     }
 
     public static String getAppRoot() {
         String path = Util.class.getResource("").getPath();
+        if(path.startsWith("file:/")) {
+            path = path.replace("file:/","");
+        }
         String pathTillBuild = path.split("aquila")[0];
         path = pathTillBuild+"aquila";
+        LOGGER.info("Deduced app root path:"+path);
         File file = new File(path);
         if(!file.exists()) {
             path = null;

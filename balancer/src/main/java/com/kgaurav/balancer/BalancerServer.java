@@ -80,6 +80,7 @@ public class BalancerServer implements Runnable {
         String command = "java -jar "+Util.getPathOfNodesBinary();
         command += " "+serverSocket.getInetAddress().getHostAddress()+" "+ serverSocket.getLocalPort()+" backup";
         LOGGER.info("Starting backup node");
+        LOGGER.info("Command: " + command);
         if(Util.runCommand(command)) {
             LOGGER.info("backup node started");
             try {
@@ -97,8 +98,9 @@ public class BalancerServer implements Runnable {
     private void startMainNode(Node backup1, Node backup2) {
         String command = null;
         StringBuilder sb = new StringBuilder();
+        String pathToNode = Util.getPathOfNodesBinary();
         //sb.append("java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 "+properties.getProperty(PATH_TO_NODE_APP));
-        sb.append("java -jar "+properties.getProperty(PATH_TO_NODE_APP));
+        sb.append("java -jar "+pathToNode);
         sb.append(" "+serverSocket.getInetAddress().getHostAddress());
         sb.append(" "+serverSocket.getLocalPort());
         sb.append(" main");
