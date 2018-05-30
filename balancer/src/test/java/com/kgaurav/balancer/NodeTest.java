@@ -42,9 +42,6 @@ public class NodeTest {
         LOGGER.info("Sleeping for 10 sec");
         Thread.sleep(10000);
         started = true;
-        /*String[] arg= new String[1];
-        arg[0] = nodes+"";
-        Application.main(arg);*/
     }
 
     @Then("^Balancer should start '(\\d+)' nodes, '(\\d+)' linked backup nodes and '(\\d+)' available backup nodes$")

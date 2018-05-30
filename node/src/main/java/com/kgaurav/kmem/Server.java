@@ -12,6 +12,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 /**
  * Created by admin on 3/22/2018.
@@ -62,24 +63,31 @@ public class Server implements Runnable {
                 Command command = new Gson().fromJson(request, Command.class);
                 switch (command.getCommandCode()) {
                     case CommandCode.GET:
+                        LOGGER.debug("fetching Data from main node");
                         returnItem(connectionSocket, command, false);
                         break;
                     case CommandCode.PUT:
+                        LOGGER.debug("Saving Data in main node");
                         saveItem(connectionSocket, command, false);
                         break;
                     case CommandCode.DELETE:
+                        LOGGER.debug("Deleting Data from main node");
                         deleteItem(connectionSocket, command, false);
                         break;
                     case CommandCode.BACK_GET:
+                        LOGGER.debug("fetching Data from backup node");
                         returnItem(connectionSocket, command, true);
                         break;
                     case CommandCode.BACK_PUT:
+                        LOGGER.debug("Saving Data in backup node");
                         saveItem(connectionSocket, command, true);
                         break;
                     case CommandCode.BACK_DELETE:
+                        LOGGER.debug("Deleting Data from backup node");
                         deleteItem(connectionSocket, command, true);
                         break;
                     case CommandCode.ADD_BACKUP_NODE:
+                        LOGGER.debug("Adding new backup node");
                         addBackupNode(connectionSocket, command);
                         break;
                     case CommandCode.SHUTDOWN:
@@ -144,6 +152,24 @@ public class Server implements Runnable {
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Failed to connect with balancer");
             }
+            command.setCommandCode(CommandCode.BACK_PUT);
+            syncData(command);
+        }
+    }
+
+    /**
+     * Sync the data with backup nodes
+     * @param command
+     */
+    private void syncData(Command command) {
+        List<Node> backupNodes = SyncSystem.getBackupNodes();
+        for(Node node : backupNodes) {
+            String commandString = new Gson().toJson(command);
+            try {
+                Util.sendDataToNode(node.getAddress(), node.getPort(), commandString);
+            } catch (ConnectionFailedException e) {
+                LOGGER.error("Failed to sync data " + commandString);
+            }
         }
     }
 
@@ -159,6 +185,8 @@ public class Server implements Runnable {
             } catch (ConnectionFailedException e) {
                 LOGGER.error("Failed to connect with balancer");
             }
+            command.setCommandCode(CommandCode.BACK_DELETE);
+            syncData(command);
         }
     }
 

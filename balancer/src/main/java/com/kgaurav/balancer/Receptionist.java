@@ -25,6 +25,7 @@ public class Receptionist implements Runnable{
     private KeyStore keyStore = null;
     private OutputStream outputStream;
     private static final int PORT = Integer.parseInt(Util.loadProperties().getProperty("receptionist.port"));
+
     public static Receptionist getInstance() {
         if(INSTANCE == null)
             INSTANCE = new Receptionist();
